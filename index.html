@@ -32,7 +32,7 @@
         <button onclick="switchTab('flashcards')" id="tab-flashcards" class="tab-btn">🎴 探探式滑卡背词</button>
         <button onclick="switchTab('versus')" id="tab-versus" class="tab-btn">⚡ 易混对抗矩阵 (20组)</button>
         <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn">📝 真题仿真演练 (300题)</button>
-        <button onclick="switchTab('rare')" id="tab-rare" class="tab-btn">💎 生僻高难专攻 (60组拔高专区)</button>
+        <button onclick="switchTab('rare')" id="tab-rare" class="tab-btn">💎 生僻高难专攻 (60组)</button>
         <button onclick="switchTab('collocations')" id="tab-collocations" class="tab-btn">🎯 黄金搭配全库 (40组)</button>
         <button onclick="switchTab('notebook')" id="tab-notebook" class="tab-btn">📊 进度与错题本</button>
       </div>
@@ -101,7 +101,10 @@
               <div class="card-main-title">...</div>
               <span class="fc-tone-badge tone-badge badge-neutral">...</span>
             </div>
-            <div class="card-bottom-hint">👉 右滑掌握 · 左滑复习 👈</div>
+            <div class="card-bottom-hint">
+              <span>👈 左滑复习</span>
+              <span>👉 右滑掌握</span>
+            </div>
           </div>
 
           <!-- Top Card (Active Dragging Card) -->
@@ -111,7 +114,7 @@
 
             <div class="card-top-info">
               <span class="fc-tag" style="background:var(--primary-light); color:var(--primary-dark); padding:2px 8px; border-radius:4px; font-weight:700;">第1组 发展情况</span>
-              <span>👆 点击翻转看释义</span>
+              <span style="color:var(--primary); font-weight:700;">👆 点击翻看释义</span>
             </div>
 
             <!-- Front Word Mode -->
@@ -124,8 +127,8 @@
             <div class="card-back-details">
               <div style="margin-bottom:8px;">
                 <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); margin-bottom:2px;">【词义与考眼】</div>
-                <p class="fc-def-text" style="font-size:0.8rem; color:#334155;"></p>
-                <p class="fc-focus-text word-focus" style="margin-top:4px;"></p>
+                <p class="fc-def-text" style="font-size:0.82rem; color:#334155; line-height:1.45;"></p>
+                <p class="fc-focus-text word-focus" style="margin-top:6px;"></p>
               </div>
               <div class="word-example-box" style="margin-top:6px;">
                 <p class="fc-example-text word-example-text"></p>
@@ -133,9 +136,10 @@
               </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:8px;">
-              <span class="card-bottom-hint">👉 右滑掌握 · 左滑复习 👈</span>
+            <div class="card-bottom-hint">
+              <span>👈 左滑复习</span>
               <button class="fc-fav-btn action-btn" onclick="toggleFavCurrentCard(event)">☆ 收藏</button>
+              <span>👉 右滑掌握</span>
             </div>
           </div>
         </div>
@@ -241,7 +245,7 @@
     </div>
   </main>
 
-  <!-- MOBILE BOTTOM NAVIGATION -->
+  <!-- MOBILE BOTTOM NAVIGATION (7 TABS) -->
   <nav class="mobile-nav">
     <div class="mobile-nav-inner">
       <button onclick="switchTab('scenes')" id="btab-scenes" class="mobile-tab-btn active">
@@ -259,6 +263,14 @@
       <button onclick="switchTab('quiz')" id="btab-quiz" class="mobile-tab-btn">
         <span class="icon">📝</span>
         <span>刷真题</span>
+      </button>
+      <button onclick="switchTab('rare')" id="btab-rare" class="mobile-tab-btn">
+        <span class="icon">💎</span>
+        <span>高难词</span>
+      </button>
+      <button onclick="switchTab('collocations')" id="btab-collocations" class="mobile-tab-btn">
+        <span class="icon">🎯</span>
+        <span>黄金搭配</span>
       </button>
       <button onclick="switchTab('notebook')" id="btab-notebook" class="mobile-tab-btn">
         <span class="icon">📊</span>

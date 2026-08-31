@@ -20,11 +20,11 @@ var currentFilteredCards = [];
 var currentQuizIndex = 0;
 var isCardFlipped = false;
 
-// Touch & Drag variables for TanTan Swiper
+// Touch & Drag state
 var isDragging = false;
 var startX = 0, startY = 0;
 var currentX = 0, currentY = 0;
-var cardElem = null;
+var hasMoved = false;
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -77,9 +77,9 @@ function switchTab(tabId) {
 // 1. SCENES RENDERER
 function renderScenes() {
   var container = document.getElementById('scenes-container');
-  var kw = document.getElementById('scene-search').value.trim().toLowerCase();
-  var chapter = document.getElementById('chapter-filter').value;
-  var tone = document.getElementById('tone-filter').value;
+  var searchEl = document.getElementById('scene-search'); var kw = (searchEl && searchEl.value) ? searchEl.value.trim().toLowerCase() : '';
+  var chapterEl = document.getElementById('chapter-filter'); var chapter = (chapterEl && chapterEl.value) ? chapterEl.value : 'ALL';
+  var toneEl = document.getElementById('tone-filter'); var tone = (toneEl && toneEl.value) ? toneEl.value : 'ALL';
 
   var html = '';
   var groups = (window.GONGKAO_DATA && window.GONGKAO_DATA.groups) || [];
@@ -124,10 +124,10 @@ function renderScenes() {
             '<span class="tone-badge ' + toneBadgeClass + '">' + escapeHtml(wordItem.tone || '中性') + '</span>' +
           '</div>' +
           '<div class="word-actions">' +
-            '<button class="action-btn ' + (isMastered ? 'active-success' : '') + '" onclick="toggleWordMaster(""+encodedName+"")" title="标记掌握">' +
+            '<button class="action-btn ' + (isMastered ? 'active-success' : '') + '" onclick="toggleWordMaster(\'' + encodedName + '\')" title="标记掌握">' +
               (isMastered ? '✓ 已掌握' : '○ 掌握') +
             '</button>' +
-            '<button class="action-btn ' + (isFav ? 'active-fav' : '') + '" onclick="toggleWordFav(""+encodedName+"")" title="收藏">' +
+            '<button class="action-btn ' + (isFav ? 'active-fav' : '') + '" onclick="toggleWordFav(\'' + encodedName + '\')" title="收藏">' +
               (isFav ? '★ 已收藏' : '☆ 收藏') +
             '</button>' +
           '</div>' +
@@ -185,7 +185,7 @@ function toggleWordFav(encodedWord) {
 
 // 2. TANTAN-STYLE SWIPER FLASHCARDS
 function initFlashcards() {
-  var scope = document.getElementById('fc-scope-select').value;
+  var scopeEl = document.getElementById('fc-scope-select'); var scope = (scopeEl && scopeEl.value) ? scopeEl.value : 'ALL';
   var all = (window.GONGKAO_DATA && window.GONGKAO_DATA.words) || [];
 
   if (scope === 'ALL') currentFilteredCards = all.slice();
@@ -210,6 +210,8 @@ function renderSwipeCard() {
   var topCard = document.getElementById('swipe-top-card');
   var underCard = document.getElementById('swipe-under-card');
 
+  if (!topCard || !underCard) return;
+
   if (currentCardIndex >= currentFilteredCards.length) {
     alert('🎉 恭喜！当前题组已全部背诵过一遍！');
     currentCardIndex = 0;
@@ -227,10 +229,11 @@ function renderSwipeCard() {
 
   fillCardData(underCard, nextWord);
 
-  setupDragListeners(topCard);
+  setupSwipeInteractions(topCard);
 }
 
 function fillCardData(cardNode, w) {
+  if (!cardNode || !w) return;
   cardNode.querySelector('.fc-tag').innerText = '第' + w.groupNum + '组 ' + w.groupTitle;
   cardNode.querySelector('.card-main-title').innerText = w.name;
   cardNode.querySelector('.fc-tone-badge').innerText = w.tone || '中性';
@@ -257,6 +260,7 @@ function fillCardData(cardNode, w) {
 
 function toggleFlipCard() {
   var topCard = document.getElementById('swipe-top-card');
+  if (!topCard) return;
   var frontCenter = topCard.querySelector('.card-center-word');
   var backDetails = topCard.querySelector('.card-back-details');
 
@@ -271,93 +275,106 @@ function toggleFlipCard() {
 }
 
 function resetCardPosition(card) {
+  if (!card) return;
+  card.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
   card.style.transform = 'translate3d(0, 0, 0) rotate(0deg)';
   card.style.opacity = '1';
-  card.querySelector('.stamp-like').style.opacity = '0';
-  card.querySelector('.stamp-nope').style.opacity = '0';
+  var stampLike = card.querySelector('.stamp-like');
+  var stampNope = card.querySelector('.stamp-nope');
+  if (stampLike) stampLike.style.opacity = '0';
+  if (stampNope) stampNope.style.opacity = '0';
 }
 
-function setupDragListeners(card) {
-  cardElem = card;
+function setupSwipeInteractions(card) {
+  var area = document.querySelector('.deck-card-area');
+  if (!area || !card) return;
 
-  card.ontouchstart = handleDragStart;
-  card.ontouchmove = handleDragMove;
-  card.ontouchend = handleDragEnd;
-
-  card.onmousedown = handleDragStart;
-  window.onmousemove = handleDragMove;
-  window.onmouseup = handleDragEnd;
-}
-
-function handleDragStart(e) {
-  if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-  isDragging = true;
-  var point = e.touches ? e.touches[0] : e;
-  startX = point.clientX;
-  startY = point.clientY;
-  currentX = startX;
-  currentY = startY;
-  if (cardElem) cardElem.classList.add('grabbing');
-}
-
-function handleDragMove(e) {
-  if (!isDragging || !cardElem) return;
-  var point = e.touches ? e.touches[0] : e;
-  currentX = point.clientX;
-  currentY = point.clientY;
-
-  var deltaX = currentX - startX;
-  var deltaY = currentY - startY;
-  var rotate = deltaX * 0.08;
-
-  cardElem.style.transform = 'translate3d(' + deltaX + 'px, ' + deltaY + 'px, 0) rotate(' + rotate + 'deg)';
-
-  var stampLike = cardElem.querySelector('.stamp-like');
-  var stampNope = cardElem.querySelector('.stamp-nope');
-
-  if (deltaX > 20) {
-    stampLike.style.opacity = Math.min(1, (deltaX - 20) / 70);
-    stampNope.style.opacity = '0';
-  } else if (deltaX < -20) {
-    stampNope.style.opacity = Math.min(1, (-deltaX - 20) / 70);
-    stampLike.style.opacity = '0';
-  } else {
-    stampLike.style.opacity = '0';
-    stampNope.style.opacity = '0';
+  function onPointerDown(e) {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    isDragging = true;
+    hasMoved = false;
+    var point = e.touches ? e.touches[0] : e;
+    startX = point.clientX;
+    startY = point.clientY;
+    currentX = startX;
+    currentY = startY;
+    card.style.transition = 'none';
+    card.classList.add('grabbing');
   }
-}
 
-function handleDragEnd() {
-  if (!isDragging || !cardElem) return;
-  isDragging = false;
-  cardElem.classList.remove('grabbing');
+  function onPointerMove(e) {
+    if (!isDragging) return;
+    var point = e.touches ? e.touches[0] : e;
+    currentX = point.clientX;
+    currentY = point.clientY;
 
-  var deltaX = currentX - startX;
-  var threshold = 85;
+    var deltaX = currentX - startX;
+    var deltaY = currentY - startY;
 
-  if (deltaX > threshold) {
-    swipeAction('right');
-  } else if (deltaX < -threshold) {
-    swipeAction('left');
-  } else {
-    if (Math.abs(deltaX) < 5 && Math.abs(currentY - startY) < 5) {
-      toggleFlipCard();
+    if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+      hasMoved = true;
+    }
+
+    var rotate = deltaX * 0.08;
+    card.style.transform = 'translate3d(' + deltaX + 'px, ' + deltaY + 'px, 0) rotate(' + rotate + 'deg)';
+
+    var stampLike = card.querySelector('.stamp-like');
+    var stampNope = card.querySelector('.stamp-nope');
+
+    if (deltaX > 20) {
+      if (stampLike) stampLike.style.opacity = Math.min(1, (deltaX - 20) / 70);
+      if (stampNope) stampNope.style.opacity = '0';
+    } else if (deltaX < -20) {
+      if (stampNope) stampNope.style.opacity = Math.min(1, (-deltaX - 20) / 70);
+      if (stampLike) stampLike.style.opacity = '0';
     } else {
-      resetCardPosition(cardElem);
+      if (stampLike) stampLike.style.opacity = '0';
+      if (stampNope) stampNope.style.opacity = '0';
     }
   }
+
+  function onPointerUp() {
+    if (!isDragging) return;
+    isDragging = false;
+    card.classList.remove('grabbing');
+
+    var deltaX = currentX - startX;
+    var threshold = 80;
+
+    if (hasMoved && deltaX > threshold) {
+      swipeAction('right');
+    } else if (hasMoved && deltaX < -threshold) {
+      swipeAction('left');
+    } else {
+      if (!hasMoved) {
+        toggleFlipCard();
+      } else {
+        resetCardPosition(card);
+      }
+    }
+  }
+
+  // Remove old events and attach new ones
+  card.onmousedown = onPointerDown;
+  window.onmousemove = onPointerMove;
+  window.onmouseup = onPointerUp;
+
+  card.ontouchstart = onPointerDown;
+  card.ontouchmove = onPointerMove;
+  card.ontouchend = onPointerUp;
 }
 
 function swipeAction(direction) {
-  if (!cardElem) return;
+  var topCard = document.getElementById('swipe-top-card');
+  if (!topCard || !currentFilteredCards[currentCardIndex]) return;
   var currentWord = currentFilteredCards[currentCardIndex];
 
   var flyOutX = direction === 'right' ? window.innerWidth + 200 : -window.innerWidth - 200;
   var flyRotate = direction === 'right' ? 30 : -30;
 
-  cardElem.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-  cardElem.style.transform = 'translate3d(' + flyOutX + 'px, 0, 0) rotate(' + flyRotate + 'deg)';
-  cardElem.style.opacity = '0';
+  topCard.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+  topCard.style.transform = 'translate3d(' + flyOutX + 'px, 0, 0) rotate(' + flyRotate + 'deg)';
+  topCard.style.opacity = '0';
 
   if (direction === 'right') {
     masteredWords.add(currentWord.name);
@@ -368,7 +385,7 @@ function swipeAction(direction) {
   updateTopStats();
 
   setTimeout(function() {
-    cardElem.style.transition = '';
+    topCard.style.transition = '';
     currentCardIndex++;
     renderSwipeCard();
   }, 250);
@@ -377,19 +394,23 @@ function swipeAction(direction) {
 function toggleFavCurrentCard(e) {
   if (e && e.stopPropagation) e.stopPropagation();
   var w = currentFilteredCards[currentCardIndex];
+  if (!w) return;
   if (favoriteWords.has(w.name)) favoriteWords.delete(w.name);
   else favoriteWords.add(w.name);
   try { localStorage.setItem(LS_FAVORITES, JSON.stringify(Array.from(favoriteWords))); } catch(e) {}
   updateTopStats();
 
-  var favBtn = cardElem.querySelector('.fc-fav-btn');
-  if (favBtn) {
-    if (favoriteWords.has(w.name)) {
-      favBtn.innerText = '★ 已收藏';
-      favBtn.classList.add('active-fav');
-    } else {
-      favBtn.innerText = '☆ 收藏';
-      favBtn.classList.remove('active-fav');
+  var topCard = document.getElementById('swipe-top-card');
+  if (topCard) {
+    var favBtn = topCard.querySelector('.fc-fav-btn');
+    if (favBtn) {
+      if (favoriteWords.has(w.name)) {
+        favBtn.innerText = '★ 已收藏';
+        favBtn.classList.add('active-fav');
+      } else {
+        favBtn.innerText = '☆ 收藏';
+        favBtn.classList.remove('active-fav');
+      }
     }
   }
 }
@@ -435,6 +456,7 @@ function loadRandomQuestion() {
 }
 
 function renderQuiz(q) {
+  if (!q) return;
   document.getElementById('quiz-source').innerText = '📍 ' + (q.source || '公考真题');
   document.getElementById('quiz-keypoints').innerText = '考点：' + ((q.keypoints && q.keypoints.join(' / ')) || '逻辑填空');
   
@@ -453,7 +475,7 @@ function renderQuiz(q) {
   var letters = ['A', 'B', 'C', 'D'];
   var optsHtml = '';
   for (var i = 0; i < q.options.length; i++) {
-    optsHtml += '<button onclick="handleSelectAnswer(""+letters[i]+"")" class="quiz-opt-btn" id="opt-btn-' + letters[i] + '">' +
+    optsHtml += '<button onclick="handleSelectAnswer(\'' + letters[i] + '\')" class="quiz-opt-btn" id="opt-btn-' + letters[i] + '">' +
       '<span class="quiz-opt-letter">' + letters[i] + '</span>' +
       '<span class="quiz-opt-text">' + escapeHtml(q.options[i]) + '</span>' +
     '</button>';
@@ -537,7 +559,7 @@ function renderRareWords() {
 // 6. COLLOCATIONS
 function renderCollocations() {
   var container = document.getElementById('collocations-container');
-  var kw = document.getElementById('collocation-search').value.trim().toLowerCase();
+  var collocEl = document.getElementById('collocation-search'); var kw = (collocEl && collocEl.value) ? collocEl.value.trim().toLowerCase() : '';
   var colls = (window.GONGKAO_DATA && window.GONGKAO_DATA.collocations) || [];
 
   var html = '';
