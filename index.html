@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>公考行测言语逻辑填空·智能记忆与真题背诵系统 (2026-2027)</title>
+  <title>言语理解逻辑填空·词汇背诵与真题实训系统 (2026-2027)</title>
   <link rel="stylesheet" href="./app.css">
 </head>
 <body>
@@ -14,37 +14,180 @@
       <div class="brand">
         <div class="brand-logo">言</div>
         <div class="brand-text">
-          <h1>公考言语逻辑填空·全景记忆系统</h1>
-          <p>2026-2027 国考/省考通用 · 1305真题 · 65场景 · 406词</p>
+          <h1>言语逻辑填空·词汇备考系统</h1>
+          <p>国考/省考精选题库 · 65组场景 · 406词 · 60组高难词 · 40组搭配</p>
         </div>
       </div>
       <div class="header-stats">
-        <div class="stat-pill">已掌握: <strong id="stat-mastered">0</strong> 词</div>
-        <div class="stat-pill">收藏: <strong id="stat-favs">0</strong> 词</div>
-        <div class="stat-pill">错题: <strong id="stat-wrongs">0</strong> 题</div>
+        <div class="stat-pill">已熟悉: <strong id="stat-mastered">0</strong> 词</div>
+        <div class="stat-pill">重点收藏: <strong id="stat-favs">0</strong> 词</div>
       </div>
     </div>
 
-    <!-- DESKTOP TOP NAV -->
+    <!-- DESKTOP TOP NAV (6 TABS, NO QUIZ) -->
     <div class="top-nav">
       <div class="top-nav-inner">
-        <button onclick="switchTab('scenes')" id="tab-scenes" class="tab-btn active">📖 65大场景速查</button>
-        <button onclick="switchTab('flashcards')" id="tab-flashcards" class="tab-btn">🎴 探探式滑卡背词</button>
+        <button onclick="switchTab('flashcards')" id="tab-flashcards" class="tab-btn active">🎴 闪卡背诵</button>
+        <button onclick="switchTab('scenes')" id="tab-scenes" class="tab-btn">📖 65大场景库</button>
         <button onclick="switchTab('versus')" id="tab-versus" class="tab-btn">⚡ 易混对抗矩阵 (20组)</button>
-        <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn">📝 真题仿真演练 (300题)</button>
         <button onclick="switchTab('rare')" id="tab-rare" class="tab-btn">💎 生僻高难专攻 (60组)</button>
         <button onclick="switchTab('collocations')" id="tab-collocations" class="tab-btn">🎯 黄金搭配全库 (40组)</button>
-        <button onclick="switchTab('notebook')" id="tab-notebook" class="tab-btn">📊 进度与错题本</button>
+        <button onclick="switchTab('notebook')" id="tab-notebook" class="tab-btn">📊 学习进度与收藏</button>
       </div>
     </div>
   </header>
 
   <!-- MAIN VIEW CONTAINER -->
   <main>
-    <!-- 1. SCENES VIEW -->
-    <div id="view-scenes" class="tab-view">
+
+    <!-- 1. TANTAN-STYLE SWIPER FLASHCARDS VIEW (SA EXCLUSIVE DECK UI) -->
+    <div id="view-flashcards" class="tab-view">
+      <div class="practice-wrapper">
+        
+        <!-- Practice Top Bar -->
+        <div class="practice-topbar">
+          <div class="progress-wrap">
+            <div class="progress-bar">
+              <div id="fc-progress-fill" class="progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-info">
+              <span id="fc-progress-text">1 / 406</span>
+              <span class="mode-select-wrap">
+                <select id="fc-scope-select" onchange="initFlashcards()" class="select-scope">
+                  <option value="ALL">全部词汇 (406词)</option>
+                  <option value="UNMASTERED">仅背诵模糊词汇</option>
+                  <option value="FAVORITE">仅背诵重点收藏词汇</option>
+                  <option value="CH1">第一章：事态演变与应对方式</option>
+                  <option value="CH2">第二章：创新守旧</option>
+                  <option value="CH3">第三章：对待事物消极态度</option>
+                  <option value="CH4">第四章：对待事物积极态度</option>
+                  <option value="CH5">第五章：感知与实践</option>
+                  <option value="CH6">第六章：其他类（多维对比）</option>
+                </select>
+              </span>
+            </div>
+          </div>
+          <div class="topbar-tag-wrap" id="fc-topbar-tag">第1组 发展情况</div>
+        </div>
+
+        <!-- 3-Layer Card Deck Area -->
+        <div class="card-area" id="card-area">
+          
+          <!-- Background Card Layer 3 -->
+          <div id="card-bg-3" class="card card-bg card-bg-3">
+            <div class="card-bg-title" id="bg-word-3">...</div>
+          </div>
+
+          <!-- Background Card Layer 2 -->
+          <div id="card-bg-2" class="card card-bg card-bg-2">
+            <div class="card-bg-title" id="bg-word-2">...</div>
+          </div>
+
+          <!-- Active Swiping Card (Top Layer) -->
+          <div id="card-top" class="card card-top">
+            
+            <!-- Dynamic Swipe Feedback Stamps -->
+            <div id="stamp-good" class="stamp stamp-good">已熟悉 ✓</div>
+            <div id="stamp-bad" class="stamp stamp-bad">仍模糊 ✕</div>
+
+            <!-- Card Face: Front -->
+            <div id="card-face-front" class="card-face card-front">
+              <div class="card-meta">
+                <span id="fc-tone-tag" class="card-meta-tone tone-zhong">中性</span>
+                <span id="fc-group-tag" class="card-meta-group">第1组</span>
+                <span class="flex-spacer"></span>
+                <button class="card-star-btn" id="fc-star-btn" onclick="toggleFavCurrentCard(event)">☆</button>
+              </div>
+
+              <div class="card-word-title" id="fc-front-word">呼之欲出</div>
+              <div class="card-divider"></div>
+              
+              <div class="card-short-def" id="fc-front-def">仿佛一叫就要从画里走出来。</div>
+
+              <div class="card-usage-box" id="fc-front-usage-box">
+                <div class="card-usage-label">
+                  <span class="card-usage-dot"></span>
+                  <span>辨析 / 核心考眼</span>
+                </div>
+                <div class="card-usage-text" id="fc-front-focus">①画像人物极其生动；②事物即将正式亮相落地。</div>
+              </div>
+
+              <div class="card-flip-hint">👇 点击卡片翻转查看【真题例句与出处】</div>
+            </div>
+
+            <!-- Card Face: Back -->
+            <div id="card-face-back" class="card-face card-back" style="display:none;">
+              <div class="card-meta">
+                <span id="fc-back-tone-tag" class="card-meta-tone tone-zhong">中性</span>
+                <span id="fc-back-word-title" class="card-back-title-mini">呼之欲出</span>
+                <span class="flex-spacer"></span>
+                <button class="card-star-btn" id="fc-back-star-btn" onclick="toggleFavCurrentCard(event)">☆</button>
+              </div>
+
+              <div class="card-back-scroll">
+                <div class="card-detail-section">
+                  <div class="card-section-label">【以字释词 / 核心侧重】</div>
+                  <div class="card-detail-text" id="fc-back-focus-full"></div>
+                </div>
+
+                <div class="card-detail-section" style="margin-top:12px;">
+                  <div class="card-section-label">【考场标准真题例句】</div>
+                  <div class="card-example-quote" id="fc-back-example"></div>
+                  <div class="card-example-source" id="fc-back-source"></div>
+                </div>
+              </div>
+
+              <div class="card-flip-hint">👆 点击翻回词义正面</div>
+            </div>
+
+          </div>
+
+          <!-- Finish Session Screen (Hidden initially) -->
+          <div id="finish-screen" class="finish-screen" style="display:none;">
+            <div class="finish-emoji">🎉</div>
+            <div class="finish-title">本轮背诵完成！</div>
+            <div class="finish-sub">已记录您的记忆进度与复习队列</div>
+            <div class="finish-stats-row">
+              <div class="finish-stat-box">
+                <div class="finish-stat-num text-good" id="finish-known-count">0</div>
+                <div class="finish-stat-lbl">已熟悉</div>
+              </div>
+              <div class="finish-stat-box">
+                <div class="finish-stat-num text-bad" id="finish-unknown-count">0</div>
+                <div class="finish-stat-lbl">仍模糊</div>
+              </div>
+            </div>
+            <div class="finish-actions">
+              <button class="btn btn-primary" onclick="restartSession()">🔄 再来一轮</button>
+              <button class="btn btn-plain" onclick="switchTab('scenes')">📖 浏览场景库</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SA Action Bar: 3 Big Control Buttons -->
+        <div class="practice-actions" id="practice-actions">
+          <button class="action-btn-circle btn-dont-know" onclick="handleSwipe('left')" title="左滑：仍模糊">
+            <span class="action-icon">✕</span>
+            <span class="action-lbl">仍模糊</span>
+          </button>
+          <button class="action-btn-circle btn-flip" onclick="toggleFlipCard()" title="点击翻转卡片">
+            <span class="action-icon">🔄</span>
+            <span class="action-lbl">翻转</span>
+          </button>
+          <button class="action-btn-circle btn-know" onclick="handleSwipe('right')" title="右滑：已熟悉">
+            <span class="action-icon">✓</span>
+            <span class="action-lbl">已熟悉</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2. SCENES VIEW (65 GROUPS) -->
+    <div id="view-scenes" class="tab-view" style="display:none;">
       <div class="control-card">
-        <input type="text" id="scene-search" oninput="filterScenes()" placeholder="🔍 搜索词汇、拼音、释义或例句（如：独树一帜、发展）..." class="search-input">
+        <input type="text" id="scene-search" oninput="filterScenes()" placeholder="🔍 搜索成语、实词、释义、例句或场景编号（如：独树一帜、发展）..." class="search-input">
         <div style="display:flex; gap:8px; width:100%; max-width:420px;">
           <select id="chapter-filter" onchange="filterScenes()" class="select-input" style="flex:1.5;">
             <option value="ALL">全部篇章 (6大篇章)</option>
@@ -53,7 +196,7 @@
             <option value="第三章">第三章：对待事物消极态度</option>
             <option value="第四章">第四章：对待事物积极态度</option>
             <option value="第五章">第五章：感知与实践</option>
-            <option value="第六章">第六章：其他类（多维对比与状态）</option>
+            <option value="第六章">第六章：其他类（多维对比）</option>
           </select>
           <select id="tone-filter" onchange="filterScenes()" class="select-input" style="flex:1;">
             <option value="ALL">全部色彩</option>
@@ -66,203 +209,78 @@
       <div id="scenes-container"></div>
     </div>
 
-    <!-- 2. TANTAN SWIPE FLASHCARDS VIEW -->
-    <div id="view-flashcards" class="tab-view" style="display:none;">
-      <div class="swipe-deck-container">
-        <div class="control-card" style="margin-bottom:0;">
-          <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem;">
-            <span>模式:</span>
-            <select id="fc-scope-select" onchange="initFlashcards()" class="select-input">
-              <option value="ALL">全部词汇 (406词)</option>
-              <option value="UNMASTERED">仅背诵未掌握词汇</option>
-              <option value="FAVORITE">仅背诵重点收藏词汇</option>
-              <option value="CH1">第一章：事态演变</option>
-              <option value="CH2">第二章：创新守旧</option>
-              <option value="CH3">第三章：消极态度</option>
-              <option value="CH4">第四章：积极态度</option>
-              <option value="CH5">第五章：感知实践</option>
-              <option value="CH6">第六章：其他状态</option>
-            </select>
-          </div>
-          <div style="font-weight:700; color:var(--primary); font-size:0.85rem;">
-            进度: <span id="fc-current-index">1</span> / <span id="fc-total-count">0</span>
-          </div>
-        </div>
-
-        <!-- TANTAN SWIPE DECK AREA -->
-        <div class="deck-card-area">
-          <!-- Under Card (Next Preview) -->
-          <div id="swipe-under-card" class="swipe-card is-under">
-            <div class="card-top-info">
-              <span class="fc-tag" style="background:var(--primary-light); color:var(--primary-dark); padding:2px 8px; border-radius:4px; font-weight:700;">场景</span>
-              <span>下一张</span>
-            </div>
-            <div class="card-center-word">
-              <div class="card-main-title">...</div>
-              <span class="fc-tone-badge tone-badge badge-neutral">...</span>
-            </div>
-            <div class="card-bottom-hint">
-              <span>👈 左滑复习</span>
-              <span>👉 右滑掌握</span>
-            </div>
-          </div>
-
-          <!-- Top Card (Active Dragging Card) -->
-          <div id="swipe-top-card" class="swipe-card is-top">
-            <div class="swipe-stamp stamp-like">已掌握 ✓</div>
-            <div class="swipe-stamp stamp-nope">需复习 ✕</div>
-
-            <div class="card-top-info">
-              <span class="fc-tag" style="background:var(--primary-light); color:var(--primary-dark); padding:2px 8px; border-radius:4px; font-weight:700;">第1组 发展情况</span>
-              <span style="color:var(--primary); font-weight:700;">👆 点击翻看释义</span>
-            </div>
-
-            <!-- Front Word Mode -->
-            <div class="card-center-word">
-              <div class="card-main-title">呼之欲出</div>
-              <span class="fc-tone-badge tone-badge badge-neutral" style="font-size:0.75rem; padding:4px 10px;">中偏褒</span>
-            </div>
-
-            <!-- Back Detailed Mode -->
-            <div class="card-back-details">
-              <div style="margin-bottom:8px;">
-                <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); margin-bottom:2px;">【词义与考眼】</div>
-                <p class="fc-def-text" style="font-size:0.82rem; color:#334155; line-height:1.45;"></p>
-                <p class="fc-focus-text word-focus" style="margin-top:6px;"></p>
-              </div>
-              <div class="word-example-box" style="margin-top:6px;">
-                <p class="fc-example-text word-example-text"></p>
-                <div class="fc-source-text word-example-source"></div>
-              </div>
-            </div>
-
-            <div class="card-bottom-hint">
-              <span>👈 左滑复习</span>
-              <button class="fc-fav-btn action-btn" onclick="toggleFavCurrentCard(event)">☆ 收藏</button>
-              <span>👉 右滑掌握</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Action Control Buttons -->
-        <div class="tantan-action-bar">
-          <button class="round-action-btn btn-swipe-left" onclick="swipeAction('left')" title="左滑：还需复习">✕</button>
-          <button class="round-action-btn btn-swipe-flip" onclick="toggleFlipCard()" title="点击翻转卡片">🔄</button>
-          <button class="round-action-btn btn-swipe-right" onclick="swipeAction('right')" title="右滑：熟记掌握">✓</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. VERSUS VIEW -->
+    <!-- 3. VERSUS BATTLE MATRIX (20 GROUPS) -->
     <div id="view-versus" class="tab-view" style="display:none;">
-      <div style="background:linear-gradient(135deg, #312e81, #4f46e5); color:#ffffff; padding:16px; border-radius:var(--radius-lg); margin-bottom:16px;">
-        <h2 style="font-size:1.1rem; font-weight:800; margin-bottom:4px;">⚡ 高频同空竞争易混对抗矩阵（20大王牌对抗组）</h2>
-        <p style="font-size:0.75rem; color:#c7d2fe;">考官在真题同一空格中最爱并置的高强度干扰词组，精准抓牢题眼与秒杀口诀</p>
+      <div class="banner banner-versus">
+        <h2>⚡ 易混对抗矩阵（20大王牌对抗组）</h2>
+        <p>基于1305道真题同空选项算法统计，考官最喜欢放在同一空格中进行高强度干扰的核心对抗组</p>
       </div>
       <div id="versus-container" class="vs-grid"></div>
     </div>
 
-    <!-- 4. QUIZ VIEW -->
-    <div id="view-quiz" class="tab-view" style="display:none;">
-      <div class="quiz-wrapper">
-        <div class="control-card">
-          <div>
-            <h3 style="font-weight:800; font-size:0.95rem;">📝 真题实战演练（300题全量真题库）</h3>
-            <p style="font-size:0.72rem; color:var(--text-muted);">清晰下划线空格 · 即时判分 · 标注真题来源与知识点</p>
-          </div>
-          <button class="action-btn active-success" onclick="loadRandomQuestion()" style="padding:6px 12px; font-size:0.8rem;">🎲 换一道随机真题</button>
-        </div>
-
-        <div class="quiz-card">
-          <div class="quiz-meta">
-            <span id="quiz-source" class="quiz-source">真题</span>
-            <span id="quiz-keypoints" class="quiz-keypoints">考查知识点</span>
-          </div>
-
-          <div id="quiz-content" class="quiz-content">题目加载中...</div>
-
-          <div id="quiz-options-list" class="quiz-options"></div>
-
-          <div id="quiz-solution-box" class="quiz-solution" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:6px;">
-              <span style="font-weight:800; font-size:0.85rem;">💡 正确答案：<strong id="quiz-correct-ans" style="color:var(--success); font-size:1rem;"></strong></span>
-              <span id="quiz-user-status" class="status-badge"></span>
-            </div>
-            <div>
-              <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); margin-bottom:4px;">【名师深度解析】</div>
-              <p id="quiz-solution-text" style="font-size:0.78rem; color:#334155; line-height:1.5;"></p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. RARE VIEW -->
+    <!-- 4. RARE WORDS VIEW (60 GROUPS) -->
     <div id="view-rare" class="tab-view" style="display:none;">
-      <div style="background:linear-gradient(135deg, #881337, #be123c); color:#ffffff; padding:16px; border-radius:var(--radius-lg); margin-bottom:16px;">
-        <h2 style="font-size:1.1rem; font-weight:800; margin-bottom:4px;">💎 生僻高难字词成语核心专区（60组全量拔高精选库）</h2>
-        <p style="font-size:0.75rem; color:#fecdd3;">针对国考副省级与高难省考拉开分差的压轴成语与高难实词</p>
+      <div class="banner banner-rare">
+        <h2>💎 生僻高难专攻（60组全量拔高精选库）</h2>
+        <p>针对国考副省级与高难省考拉开分差的压轴成语、极易望文生义成语与古雅公文实词</p>
       </div>
       <div id="rare-container" class="rare-grid"></div>
     </div>
 
-    <!-- 6. COLLOCATIONS VIEW -->
+    <!-- 5. COLLOCATIONS VIEW (40 GROUPS) -->
     <div id="view-collocations" class="tab-view" style="display:none;">
       <div class="control-card">
         <div>
-          <h3 style="font-weight:800; font-size:0.95rem;">🎯 考场黄金搭配全景库（40组高频核心动宾搭配）</h3>
-          <p style="font-size:0.72rem; color:var(--text-muted);">掌握固定搭配，考场 3 秒排除 80% 干扰项</p>
+          <h3 style="font-weight:800; font-size:1rem; color:#1e1b4b;">🎯 黄金搭配全景库（40组高频核心动宾搭配）</h3>
+          <p style="font-size:0.75rem; color:var(--text-muted);">掌握动宾/主谓固定搭配，考场 3 秒排除 80% 干扰项</p>
         </div>
         <input type="text" id="collocation-search" oninput="filterCollocations()" placeholder="🔍 搜索动词/搭配宾语（如：凝聚、格局）..." class="search-input" style="max-width:240px;">
       </div>
       <div id="collocations-container" class="colloc-grid"></div>
     </div>
 
-    <!-- 7. NOTEBOOK VIEW -->
+    <!-- 6. NOTEBOOK VIEW -->
     <div id="view-notebook" class="tab-view" style="display:none;">
       <div class="stats-cards-grid">
         <div class="stats-card">
           <div class="stats-label">已熟练掌握词汇</div>
-          <div class="stats-num" id="dash-mastered-count" style="color:var(--success);">0</div>
+          <div class="stats-num text-good" id="dash-mastered-count">0</div>
         </div>
         <div class="stats-card">
           <div class="stats-label">重点收藏词汇</div>
-          <div class="stats-num" id="dash-fav-count" style="color:#d97706;">0</div>
+          <div class="stats-num text-warning" id="dash-fav-count">0</div>
         </div>
         <div class="stats-card">
-          <div class="stats-label">刷题错题记录</div>
-          <div class="stats-num" id="dash-wrong-count" style="color:var(--danger);">0</div>
+          <div class="stats-label">总词汇总库</div>
+          <div class="stats-num" style="color:var(--primary);">406</div>
         </div>
       </div>
 
-      <div class="scene-box" style="padding:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:12px;">
-          <h3 style="font-weight:800; font-size:0.95rem;">📋 我的错题集与重练本</h3>
-          <button onclick="clearWrongHistory()" class="action-btn" style="color:var(--danger);">🗑 清空错题记录</button>
+      <div class="scene-box" style="padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:16px;">
+          <h3 style="font-weight:800; font-size:1rem; color:#1e1b4b;">⭐ 我的重点收藏夹</h3>
+          <span style="font-size:0.75rem; color:var(--text-muted);" id="fav-summary-text">共 0 个收藏词汇</span>
         </div>
-        <div id="wrong-questions-list"></div>
+        <div id="favorites-list-container"></div>
       </div>
     </div>
+
   </main>
 
-  <!-- MOBILE BOTTOM NAVIGATION (7 TABS) -->
+  <!-- MOBILE BOTTOM NAVIGATION BAR (6 TABS) -->
   <nav class="mobile-nav">
     <div class="mobile-nav-inner">
-      <button onclick="switchTab('scenes')" id="btab-scenes" class="mobile-tab-btn active">
+      <button onclick="switchTab('flashcards')" id="btab-flashcards" class="mobile-tab-btn active">
+        <span class="icon">🎴</span>
+        <span>闪卡</span>
+      </button>
+      <button onclick="switchTab('scenes')" id="btab-scenes" class="mobile-tab-btn">
         <span class="icon">📖</span>
         <span>场景库</span>
-      </button>
-      <button onclick="switchTab('flashcards')" id="btab-flashcards" class="mobile-tab-btn">
-        <span class="icon">🎴</span>
-        <span>滑卡背词</span>
       </button>
       <button onclick="switchTab('versus')" id="btab-versus" class="mobile-tab-btn">
         <span class="icon">⚡</span>
         <span>易混词</span>
-      </button>
-      <button onclick="switchTab('quiz')" id="btab-quiz" class="mobile-tab-btn">
-        <span class="icon">📝</span>
-        <span>刷真题</span>
       </button>
       <button onclick="switchTab('rare')" id="btab-rare" class="mobile-tab-btn">
         <span class="icon">💎</span>
@@ -274,12 +292,12 @@
       </button>
       <button onclick="switchTab('notebook')" id="btab-notebook" class="mobile-tab-btn">
         <span class="icon">📊</span>
-        <span>错题本</span>
+        <span>进度</span>
       </button>
     </div>
   </nav>
 
-  <!-- MODULAR SCRIPTS -->
+  <!-- SCRIPTS -->
   <script src="./data.js"></script>
   <script src="./app.js"></script>
 </body>
